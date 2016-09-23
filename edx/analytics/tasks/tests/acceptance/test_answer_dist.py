@@ -5,9 +5,7 @@ End to end test of answer distribution.
 import os
 import logging
 
-from luigi.s3 import S3Target
-
-from edx.analytics.tasks.tests.acceptance import AcceptanceTestCase, modify_target_for_local_server
+from edx.analytics.tasks.tests.acceptance import AcceptanceTestCase
 from edx.analytics.tasks.url import url_path_join
 from edx.analytics.tasks.pathutil import PathSetTask
 
@@ -59,7 +57,8 @@ class AnswerDistributionAcceptanceTest(BaseAnswerDistributionAcceptanceTest):
         self.validate_output()
 
     def validate_output(self):
-        output_targets = PathSetTask([self.test_out], ['*']).output()
+
+        output_targets = self.get_targets_from_remote_path(self.test_out)
 
         # There are 3 courses in the test data
         self.assertEqual(len(output_targets), 3)
@@ -68,7 +67,6 @@ class AnswerDistributionAcceptanceTest(BaseAnswerDistributionAcceptanceTest):
         def get_count(line):
             return int(line.split(',')[3])
         for output_target in output_targets:
-            output_target = modify_target_for_local_server(output_target)
             with output_target.open() as f:
                 lines = [l for l in f][1:]  # Skip header
                 self.assertTrue(len(lines) > 0)

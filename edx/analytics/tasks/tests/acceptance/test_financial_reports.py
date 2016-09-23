@@ -10,12 +10,9 @@ import luigi
 import pandas
 from pandas.util.testing import assert_frame_equal, assert_series_equal
 
-from edx.analytics.tasks.s3_util import S3HdfsTarget
-from edx.analytics.tasks.tests import unittest
-from edx.analytics.tasks.tests.acceptance import AcceptanceTestCase, when_vertica_available, when_vertica_not_available, modify_target_for_local_server
-from edx.analytics.tasks.url import url_path_join, get_target_from_url
+from edx.analytics.tasks.tests.acceptance import AcceptanceTestCase, when_vertica_available, when_vertica_not_available
+from edx.analytics.tasks.url import url_path_join
 from edx.analytics.tasks.reports.reconcile import LoadInternalReportingOrderTransactionsToWarehouse
-from edx.analytics.tasks.pathutil import PathSetTask
 
 log = logging.getLogger(__name__)
 
@@ -101,10 +98,9 @@ class FinancialReportsAcceptanceTest(AcceptanceTestCase):
             import_date=luigi.DateParameter().parse(self.UPPER_BOUND_DATE)
         )
         columns = [x[0] for x in final_output_task.columns]
-        output_targets = PathSetTask([output_root], ['*']).output()
+        output_targets = self.get_targets_from_remote_path(output_root)
         raw_output = ""
         for output_target in output_targets:
-            output_target = modify_target_for_local_server(output_target)
             raw_output += output_target.open('r').read()
 
         expected_output_csv = os.path.join(self.data_dir, 'output', 'expected_financial_report.csv')

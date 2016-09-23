@@ -9,9 +9,8 @@ import json
 import tarfile
 
 
-from edx.analytics.tasks.tests.acceptance import AcceptanceTestCase, modify_target_for_local_server
-from edx.analytics.tasks.pathutil import PathSetTask
-from edx.analytics.tasks.url import url_path_join, get_target_from_url
+from edx.analytics.tasks.tests.acceptance import AcceptanceTestCase
+from edx.analytics.tasks.url import url_path_join
 from edx.analytics.tasks.tests.acceptance.services import fs, shell
 from edx.analytics.tasks.util.opaque_key_util import get_filename_safe_course_id
 from edx.analytics.tasks.util.file_util import copy_file_to_file
@@ -111,7 +110,7 @@ class ObfuscationAcceptanceTest(AcceptanceTestCase):
 
     def validate_obfuscation(self):
         """Validates obfuscation workflow."""
-        output_target = modify_target_for_local_server(PathSetTask([self.test_out], ['*.tar.gz.gpg']).output()[0])
+        output_target = self.get_targets_from_remote_path(self.test_out, '*.tar.gz.gpg')[0]
         output_filename = os.path.basename(output_target.path)
         temp_output_filepath = os.path.join(self.temporary_dir, output_filename)
 

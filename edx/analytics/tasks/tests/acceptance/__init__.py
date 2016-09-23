@@ -7,6 +7,7 @@ import os
 import shutil
 import unittest
 
+from edx.analytics.tasks.pathutil import PathSetTask
 from edx.analytics.tasks.tests.acceptance.services import fs, db, task, hive, vertica, elasticsearch_service
 from edx.analytics.tasks.url import url_path_join, get_target_from_url
 
@@ -299,3 +300,7 @@ class AcceptanceTestCase(unittest.TestCase):
                 expected = sorted([json.loads(eventline) for eventline in expected_output_file])
                 actual = sorted([json.loads(eventline) for eventline in actual_output_file])
                 self.assertListEqual(expected, actual)
+
+    def get_targets_from_remote_path(remote_path, pattern='*'):
+        output_targets = PathSetTask([remote_path], [pattern]).output()
+        return [modify_target_for_local_server(output_target) for output_target in output_targets]
