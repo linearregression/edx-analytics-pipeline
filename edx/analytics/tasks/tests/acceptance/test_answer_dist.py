@@ -7,8 +7,9 @@ import logging
 
 from luigi.s3 import S3Target
 
-from edx.analytics.tasks.tests.acceptance import AcceptanceTestCase, when_s3_available
+from edx.analytics.tasks.tests.acceptance import AcceptanceTestCase, modify_target_for_local_server
 from edx.analytics.tasks.url import url_path_join
+from edx.analytics.tasks.pathutil import PathSetTask
 
 
 log = logging.getLogger(__name__)
@@ -36,13 +37,12 @@ class BaseAnswerDistributionAcceptanceTest(AcceptanceTestCase):
         dst = url_path_join(self.test_src, self.INPUT_FILE)
 
         # Upload test data file
-        self.s3_client.put(src, dst)
+        self.upload_file(src, dst)
 
 
 class AnswerDistributionAcceptanceTest(BaseAnswerDistributionAcceptanceTest):
     """Acceptance test for the CSV-generating Answer Distribution Task"""
 
-    @when_s3_available
     def test_answer_distribution(self):
         self.task.launch([
             'AnswerDistributionOneFilePerCourseTask',
@@ -59,17 +59,17 @@ class AnswerDistributionAcceptanceTest(BaseAnswerDistributionAcceptanceTest):
         self.validate_output()
 
     def validate_output(self):
-        outputs = self.s3_client.list(self.test_out)
-        outputs = [url_path_join(self.test_out, p) for p in outputs]
+        output_targets = PathSetTask([self.test_out], ['*']).output()
 
         # There are 3 courses in the test data
-        self.assertEqual(len(outputs), 3)
+        self.assertEqual(len(output_targets), 3)
 
         # Check that the results have data
         def get_count(line):
             return int(line.split(',')[3])
-        for output in outputs:
-            with S3Target(output).open() as f:
+        for output_target in output_targets:
+            output_target = modify_target_for_local_server(output_target)
+            with output_target.open() as f:
                 lines = [l for l in f][1:]  # Skip header
                 self.assertTrue(len(lines) > 0)
 
@@ -80,7 +80,6 @@ class AnswerDistributionAcceptanceTest(BaseAnswerDistributionAcceptanceTest):
 class AnswerDistributionMysqlAcceptanceTests(BaseAnswerDistributionAcceptanceTest):
     """Acceptance tests for Answer Distribution Tasks -> MySQL"""
 
-    @when_s3_available
     def test_answer_distribution_mysql(self):
         self.task.launch([
             'AnswerDistributionToMySQLTaskWorkflow',

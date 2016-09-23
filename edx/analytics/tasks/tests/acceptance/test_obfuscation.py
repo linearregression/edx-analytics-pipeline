@@ -9,7 +9,7 @@ import json
 import tarfile
 
 
-from edx.analytics.tasks.tests.acceptance import AcceptanceTestCase
+from edx.analytics.tasks.tests.acceptance import AcceptanceTestCase, modify_target_for_local_server
 from edx.analytics.tasks.pathutil import PathSetTask
 from edx.analytics.tasks.url import url_path_join, get_target_from_url
 from edx.analytics.tasks.tests.acceptance.services import fs, shell
@@ -111,19 +111,16 @@ class ObfuscationAcceptanceTest(AcceptanceTestCase):
 
     def validate_obfuscation(self):
         """Validates obfuscation workflow."""
-        output_target = PathSetTask([self.test_out], ['*.tar.gz.gpg']).output()[0]
+        output_target = modify_target_for_local_server(PathSetTask([self.test_out], ['*.tar.gz.gpg']).output()[0])
         output_filename = os.path.basename(output_target.path)
-        output_filepath = os.path.join(self.temporary_dir, output_filename)
-
-        if output_target.path.startswith('s3://'):
-            output_target = get_target_from_url(output_target.path.replace('s3://', 's3+https://'))
+        temp_output_filepath = os.path.join(self.temporary_dir, output_filename)
 
         with output_target.open('r') as input_file:
-            with open(output_filepath, 'w') as output_file:
+            with open(temp_output_filepath, 'w') as output_file:
                 copy_file_to_file(input_file, output_file)
 
-        decrypted_filepath = output_filepath[:-len('.gpg')]
-        fs.decrypt_file(output_filepath, decrypted_filepath, 'insecure_secret.key')
+        decrypted_filepath = temp_output_filepath[:-len('.gpg')]
+        fs.decrypt_file(temp_output_filepath, decrypted_filepath, 'insecure_secret.key')
 
         with tarfile.open(decrypted_filepath, 'r:gz') as tfile:
             tfile.extractall(self.temporary_dir)

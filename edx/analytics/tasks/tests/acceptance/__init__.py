@@ -46,7 +46,7 @@ def when_geolocation_data_available(function):
     geolocation_data = config.get('geolocation_data')
     geolocation_data_available = bool(geolocation_data)
     if geolocation_data_available:
-        geolocation_data_available = get_target_from_url(get_jenkins_safe_url(geolocation_data)).exists()
+        geolocation_data_available = get_target_for_local_server(geolocation_data).exists()
     return unittest.skipIf(
         not geolocation_data_available, 'Geolocation data is not available'
     )(function)
@@ -91,11 +91,21 @@ def get_test_config():
     return config
 
 
-def get_jenkins_safe_url(url):
+def get_target_for_local_server(url):
     # The machine running the acceptance test suite may not have hadoop installed on it, so convert S3 paths (which
     # are normally handled by the hadoop DFS client) to S3+https paths, which are handled by the python native S3
     # client.
-    return url.replace('s3://', 's3+https://')
+    return get_target_from_url(url.replace('s3://', 's3+https://'))
+
+
+def modify_target_for_local_server(target):
+    # The machine running the acceptance test suite may not have hadoop installed on it (e.g. Jenkins), so convert
+    # S3 paths (which are normally handled by the hadoop DFS client) to S3+https paths, which are handled by the python
+    # native S3 client.  But avoid creating a new target for a HDFS target, because the path has had the scheme stripped.
+    if target.path.startswith('s3://'):
+        return get_target_for_local_server(target.path)
+    else:
+        return target
 
 
 class AcceptanceTestCase(unittest.TestCase):
@@ -244,7 +254,7 @@ class AcceptanceTestCase(unittest.TestCase):
         if not self.should_reset_state:
             return
 
-        root_target = get_target_from_url(get_jenkins_safe_url(self.test_root))
+        root_target = get_target_for_local_server(self.test_root)
         if root_target.exists():
             root_target.remove()
         self.import_db.reset()
