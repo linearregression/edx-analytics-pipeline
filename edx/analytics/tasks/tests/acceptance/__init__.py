@@ -301,6 +301,15 @@ class AcceptanceTestCase(unittest.TestCase):
                 actual = sorted([json.loads(eventline) for eventline in actual_output_file])
                 self.assertListEqual(expected, actual)
 
-    def get_targets_from_remote_path(remote_path, pattern='*'):
+    def get_targets_from_remote_path(self, remote_path, pattern='*'):
         output_targets = PathSetTask([remote_path], [pattern]).output()
         return [modify_target_for_local_server(output_target) for output_target in output_targets]
+
+    def download_file_to_local_directory(self, remote_file_path, local_file_dir_name):
+        log.debug('Downloading %s to %s', remote_file_path, local_file_dir_name)
+        filename = os.path.basename(remote_file_path)
+        local_file_path = url_path_join(local_file_dir_name, filename)
+        with get_target_for_local_server(remote_file_path).open('r') as remote_file:
+            with open(local_file_path, 'w') as local_file:
+                shutil.copyfileobj(remote_file, local_file)
+        return local_file_path
