@@ -7,7 +7,6 @@ import logging
 
 from edx.analytics.tasks.tests.acceptance import AcceptanceTestCase
 from edx.analytics.tasks.url import url_path_join
-from edx.analytics.tasks.pathutil import PathSetTask
 
 
 log = logging.getLogger(__name__)

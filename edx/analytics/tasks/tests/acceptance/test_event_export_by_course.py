@@ -61,8 +61,8 @@ class EventExportByCourseAcceptanceTest(AcceptanceTestCase):
         self.validate_output()
 
     def download_output_files(self):
-        output_targets = self.get_targets_from_remote_path(test_out)
-        
+        output_targets = self.get_targets_from_remote_path(self.test_out)
+
         self.assertEqual(len(output_targets), len(self.output_files))
 
         self.temporary_dir = tempfile.mkdtemp()
