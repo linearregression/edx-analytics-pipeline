@@ -216,7 +216,7 @@ class QueryLastCountryPerCourseTaskTestCase(unittest.TestCase):
             USE default;
             DROP TABLE IF EXISTS course_enrollment_location_current;
             CREATE EXTERNAL TABLE course_enrollment_location_current (
-                date STRING,
+                `date` STRING,
                 course_id STRING,
                 country_code STRING,
                 count INT,
