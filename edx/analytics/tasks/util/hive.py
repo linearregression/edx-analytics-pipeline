@@ -118,7 +118,7 @@ class HiveTableTask(WarehouseMixin, OverwriteOutputMixin, HiveQueryTask):
         query = query_format.format(
             database_name=hive_database_name(),
             table=self.table,
-            col_spec=','.join([' '.join("`{}`".format(c)) for c in self.columns]),
+            col_spec=','.join(['`{}` {}'.format(name, col_type) for name, col_type in self.columns]),
             location=self.table_location,
             table_format=self.table_format,
             partition=self.partition,
@@ -212,7 +212,7 @@ class BareHiveTableTask(WarehouseMixin, OverwriteOutputMixin, HiveQueryTask):
         query = query_format.format(
             database_name=hive_database_name(),
             table=self.table,
-            col_spec=','.join([' '.join("`{}`".format(c)) for c in self.columns]),
+            col_spec=','.join(['`{}` {}'.format(name, col_type) for name, col_type in self.columns]),
             location=self.table_location,
             table_format=self.table_format,
             partition_clause=partition_clause,
