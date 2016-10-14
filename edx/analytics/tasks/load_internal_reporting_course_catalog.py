@@ -328,8 +328,6 @@ class LoadInternalReportingCourseCatalogToWarehouse(
         yield LoadInternalReportingCourseSeatToWarehouse(**kwargs)
         yield LoadInternalReportingProgramCourseToWarehouse(**kwargs)
 
-    def output(self):
-        return [t.output() for t in self.requires()]
-
     def complete(self):
+        # OverwriteOutputMixin changes the complete() method behavior, so we override it.
         return all(r.complete() for r in luigi.task.flatten(self.requires()))
