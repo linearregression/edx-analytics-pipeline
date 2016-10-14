@@ -86,7 +86,7 @@ class PullCourseCatalogAPIData(LoadInternalReportingCourseCatalogMixin, luigi.Ta
 
 class ProgramCourseRecord(Record):
     """Represents a course run within a program."""
-    program_id = StringField(nullable=False, length=32)
+    program_id = StringField(nullable=False, length=36)
     program_type = StringField(nullable=False, length=32)
     program_title = StringField(nullable=True, length=255, normalize_whitespace=True)
     catalog_course = StringField(nullable=False, length=255)
