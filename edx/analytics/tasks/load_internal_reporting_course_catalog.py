@@ -332,4 +332,4 @@ class LoadInternalReportingCourseCatalogToWarehouse(
         return [t.output() for t in self.requires()]
 
     def complete(self):
-        return all(r.complete() for r in flatten(self.requires()))
+        return all(r.complete() for r in luigi.task.flatten(self.requires()))
