@@ -330,3 +330,6 @@ class LoadInternalReportingCourseCatalogToWarehouse(
 
     def output(self):
         return [t.output() for t in self.requires()]
+
+    def complete(self):
+        return all(r.complete() for r in flatten(self.requires()))
