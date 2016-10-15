@@ -303,7 +303,11 @@ class AcceptanceTestCase(unittest.TestCase):
 
     def get_targets_from_remote_path(self, remote_path, pattern='*'):
         output_targets = PathSetTask([remote_path], [pattern]).output()
-        return [modify_target_for_local_server(output_target) for output_target in output_targets]
+        modified = [modify_target_for_local_server(output_target) for output_target in output_targets]
+        print "Found {} targets for remote path {} and pattern {}".format(len(modified), remote_path, pattern)
+        for entry in modified:
+            print "Found remote target with path {}".format(entry.path)
+        return modified
 
     def download_file_to_local_directory(self, remote_file_path, local_file_dir_name):
         log.debug('Downloading %s to %s', remote_file_path, local_file_dir_name)
