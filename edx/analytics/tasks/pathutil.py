@@ -67,9 +67,10 @@ class PathSetTask(luigi.Task):
                     source = url_path_join(src, path)
                     yield ExternalURL(source)
             elif src.startswith('hdfs'):
-                # TODO: implement exclude_zero_length to match S3 case.
-                for source in luigi.hdfs.listdir(src, recursive=True):
-                    if any(fnmatch.fnmatch(source, include_val) for include_val in self.include):
+                for source, size in luigi.hdfs.listdir(src, recursive=True, include_size=True):
+                    if not self.include_zero_length and size == 0:
+                        continue
+                    elif any(fnmatch.fnmatch(source, include_val) for include_val in self.include):
                         yield ExternalURL(source)
             else:
                 # Apply the include patterns to the relative path below the src directory.
